@@ -147,4 +147,13 @@ export interface OAuthFlowContext {
 	 * implementation.
 	 */
 	generateRandomState?: typeof defaultGenerateRandomState;
+
+	/**
+	 * Override the renderer used to draw the device-flow verification QR code to
+	 * the terminal (RFC 8628). Receives the verification URL and returns the
+	 * string to print. Used by tests to inject a deterministic placeholder
+	 * instead of a real ~30-line ASCII QR code. Defaults to an ASCII QR of the
+	 * verification URL.
+	 */
+	renderDeviceQrCode?: (verificationUrl: string) => string;
 }
