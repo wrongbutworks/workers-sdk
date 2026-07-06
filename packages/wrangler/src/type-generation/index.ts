@@ -2,17 +2,30 @@ import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import {
-	CommandLineArgsError,
 	configFileName,
 	experimental_readRawConfig,
-	FatalError,
 	parseJSONC,
-	UserError,
 } from "@cloudflare/workers-utils";
 import chalk from "chalk";
 import * as find from "empathic/find";
 import { getNodeCompat } from "miniflare";
 import yargs from "yargs";
+import {
+	ConflictingBindingTypesError,
+	ConflictingTypesFileError,
+	DeprecatedIncludeRuntimeError,
+	IncompatibleServiceWorkerError,
+	InvalidEnvInterfaceArgsError,
+	InvalidEnvInterfaceError,
+	InvalidOutputPathArgsError,
+	InvalidOutputPathError,
+	MissingConfigFileError,
+	MissingEnvironmentError,
+	MissingServiceEntryPointError,
+	MissingTypeSelectionArgsError,
+	MissingTypeSelectionError,
+	TypesOutOfDateError,
+} from "../cli-errors/type-generation";
 import { readConfig } from "../config";
 import { createCommand } from "../core/create-command";
 import { getEntry } from "../deployment-bundle/entry";
@@ -163,44 +176,26 @@ export const typesCommand = createCommand({
 	validateArgs(args) {
 		// args.xRuntime will be a string if the user passes "--x-include-runtime" or "--x-include-runtime=..."
 		if (typeof args.experimentalIncludeRuntime === "string") {
-			throw new CommandLineArgsError(
-				"You no longer need to use --experimental-include-runtime.\n" +
-					"`wrangler types` will now generate runtime types in the same file as the Env types.\n" +
-					"You should delete the old runtime types file, and remove it from your tsconfig.json.\n" +
-					"Then rerun `wrangler types`.",
-				{ telemetryMessage: "type generation args include runtime deprecated" }
-			);
+			throw new DeprecatedIncludeRuntimeError();
 		}
 
 		const validInterfaceRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 
 		if (!validInterfaceRegex.test(args.envInterface)) {
-			throw new CommandLineArgsError(
-				`The provided env-interface value ("${args.envInterface}") does not satisfy the validation regex: ${validInterfaceRegex}`,
-				{
-					telemetryMessage: "type generation args invalid env interface",
-				}
+			throw new InvalidEnvInterfaceArgsError(
+				args.envInterface,
+				validInterfaceRegex
 			);
 		}
 
 		if (!args.path.endsWith(".d.ts")) {
-			throw new CommandLineArgsError(
-				`The provided output path '${args.path}' does not point to a declaration file - please use the '.d.ts' extension`,
-				{
-					telemetryMessage: "type generation args invalid output path",
-				}
-			);
+			throw new InvalidOutputPathArgsError(args.path);
 		}
 
 		validateTypesFile(args.path);
 
 		if (!args.includeEnv && !args.includeRuntime) {
-			throw new CommandLineArgsError(
-				"At least one of --include-env or --include-runtime must be enabled. Use --include-env to generate environment/binding types, or --include-runtime to generate Workers runtime types.",
-				{
-					telemetryMessage: "type generation args missing type selection",
-				}
-			);
+			throw new MissingTypeSelectionArgsError();
 		}
 	},
 	async handler(args) {
@@ -241,13 +236,7 @@ export const typesCommand = createCommand({
 				args.env
 			);
 			if (outOfDate) {
-				throw new FatalError(
-					`Types at ${outputPath} are out of date. Run \`wrangler types\` to regenerate.`,
-					{
-						code: 1,
-						telemetryMessage: "type generation check types out of date",
-					}
-				);
+				throw new TypesOutOfDateError(outputPath);
 			}
 
 			logger.log(`✨ Types at ${outputPath} are up to date.\n`);
@@ -570,13 +559,7 @@ async function resolveSecondaryEntries(
 	for (const secondaryConfig of secondaryConfigs) {
 		const serviceEntry = await getEntry({}, secondaryConfig, "types");
 		if (!serviceEntry.name) {
-			throw new UserError(
-				`Could not resolve entry point for service config '${secondaryConfig}'.`,
-				{
-					telemetryMessage:
-						"type generation command service entrypoint missing",
-				}
-			);
+			throw new MissingServiceEntryPointError(`${secondaryConfig}`);
 		}
 
 		const key = serviceEntry.name;
@@ -653,10 +636,7 @@ function assertConfigFileDetected(
 		(fs.statSync(config.configPath, { throwIfNoEntry: false })?.isDirectory() ??
 			true)
 	) {
-		throw new UserError(
-			`No config file detected${requestedConfig ? ` (at ${requestedConfig})` : ""}. This command requires a Wrangler configuration file.`,
-			{ telemetryMessage: "type generation command missing config" }
-		);
+		throw new MissingConfigFileError(requestedConfig);
 	}
 }
 
@@ -690,17 +670,11 @@ function validateGenerateTypesOptions({
 }): void {
 	const validInterfaceRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 	if (!validInterfaceRegex.test(envInterface)) {
-		throw new UserError(
-			`The provided env-interface value ("${envInterface}") does not satisfy the validation regex: ${validInterfaceRegex}`,
-			{ telemetryMessage: "type generation args invalid env interface" }
-		);
+		throw new InvalidEnvInterfaceError(envInterface, validInterfaceRegex);
 	}
 
 	if (!path.endsWith(".d.ts")) {
-		throw new UserError(
-			`The provided output path '${path}' does not point to a declaration file - please use the '.d.ts' extension`,
-			{ telemetryMessage: "type generation args invalid output path" }
-		);
+		throw new InvalidOutputPathError(path);
 	}
 
 	if (validateOutputPath) {
@@ -708,15 +682,7 @@ function validateGenerateTypesOptions({
 	}
 
 	if (!includeEnv && !includeRuntime) {
-		const [envOpt, runtimeOpt] =
-			source === "cli"
-				? ["--include-env", "--include-runtime"]
-				: ["includeEnv", "includeRuntime"];
-
-		throw new UserError(
-			`At least one of ${envOpt} or ${runtimeOpt} must be enabled. Use ${envOpt} to generate environment/binding types, or ${runtimeOpt} to generate Workers runtime types.`,
-			{ telemetryMessage: "type generation args missing type selection" }
-		);
+		throw new MissingTypeSelectionError(source);
 	}
 }
 
@@ -881,12 +847,7 @@ export async function generateEnvTypes(
 	const userProvidedEnvInterface = envInterface !== "Env";
 
 	if (userProvidedEnvInterface && entrypointFormat === "service-worker") {
-		throw new UserError(
-			"An env-interface value has been provided but the worker uses the incompatible Service Worker syntax",
-			{
-				telemetryMessage: "type generation command env interface incompatible",
-			}
-		);
+		throw new IncompatibleServiceWorkerError();
 	}
 
 	const hasEnvironments =
@@ -1802,12 +1763,7 @@ const validateTypesFile = (path: string): void => {
 			!fileContent.includes("Generated by Wrangler") &&
 			!fileContent.includes("Runtime types generated with workerd")
 		) {
-			throw new UserError(
-				`A non-Wrangler ${basename(path)} already exists, please rename and try again.`,
-				{
-					telemetryMessage: "type generation validation conflicting types file",
-				}
-			);
+			throw new ConflictingTypesFileError(basename(path));
 		}
 	} catch (error) {
 		if (error instanceof Error && !error.message.includes("not found")) {
@@ -1927,14 +1883,7 @@ function getEnvConfig(
 	const envConfig = rawConfig.env?.[environmentName];
 	if (!envConfig) {
 		const availableEnvs = Object.keys(rawConfig.env ?? {});
-		const envList =
-			availableEnvs.length > 0
-				? `Available environments: ${availableEnvs.join(", ")}`
-				: "No environments are defined in the configuration file.";
-		throw new UserError(
-			`Environment "${environmentName}" not found in configuration.\n${envList}`,
-			{ telemetryMessage: "type generation config missing environment" }
-		);
+		throw new MissingEnvironmentError(environmentName, availableEnvs);
 	}
 
 	return envConfig;
@@ -2071,11 +2020,11 @@ function collectCoreBindings(
 		const existing = bindingsMap.get(name);
 		if (existing) {
 			if (existing.bindingCategory !== bindingCategory) {
-				throw new UserError(
-					`Binding "${name}" has conflicting types across environments: ` +
-						`"${existing.bindingCategory}" vs "${bindingCategory}" (in ${envName}). ` +
-						`Please use unique binding names for different binding types.`,
-					{ telemetryMessage: "type generation bindings conflicting types" }
+				throw new ConflictingBindingTypesError(
+					name,
+					existing.bindingCategory,
+					bindingCategory,
+					envName
 				);
 			}
 

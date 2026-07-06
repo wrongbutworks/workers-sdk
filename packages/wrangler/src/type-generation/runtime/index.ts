@@ -2,6 +2,10 @@ import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { Miniflare } from "miniflare";
 import { version } from "workerd";
+import {
+	MissingCompatibilityDateError,
+	RuntimeTypesFetchError,
+} from "../../cli-errors/type-generation";
 import { logger } from "../../logger";
 import { getRuntimeHeader, RUNTIME_HEADER_COMMENT_PREFIX } from "../helpers";
 import type { Config } from "@cloudflare/workers-utils";
@@ -16,7 +20,8 @@ const DEFAULT_OUTFILE_RELATIVE_PATH = "worker-configuration.d.ts";
  * types, from ensuring the output directory exists to spawning the workerd process (via Miniflare)
  * and writing the generated types to a file.
  *
- * @throws {Error} If the config file does not have a compatibility date.
+ * @throws {MissingCompatibilityDateError} If the config file does not have a compatibility date.
+ * @throws {RuntimeTypesFetchError} If the type-generation worker returns a non-OK response.
  *
  * @example
  * import { generateRuntimeTypes } from './path/to/this/file';
@@ -45,7 +50,7 @@ export async function generateRuntimeTypes({
 	outFile?: string;
 }): Promise<{ runtimeHeader: string; runtimeTypes: string }> {
 	if (!compatibility_date) {
-		throw new Error("Config must have a compatibility date.");
+		throw new MissingCompatibilityDateError();
 	}
 
 	const header = getRuntimeHeader(
@@ -117,7 +122,7 @@ async function generate({
 		const text = await res.text();
 
 		if (!res.ok) {
-			throw new Error(text);
+			throw new RuntimeTypesFetchError(text);
 		}
 
 		return text;

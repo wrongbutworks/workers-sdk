@@ -13,6 +13,7 @@ import chalk from "chalk";
 import { Cloudflare } from "cloudflare";
 import dedent from "ts-dedent";
 import { createCLIParser } from "..";
+import { CLICommandLineArgsError, CLIError } from "../cli-errors";
 import { readConfig } from "../config";
 import {
 	isBuildFailure,
@@ -474,7 +475,10 @@ export async function handleError(
 		`);
 	}
 
-	if (e instanceof CommandLineArgsError) {
+	if (
+		e instanceof CommandLineArgsError ||
+		e instanceof CLICommandLineArgsError
+	) {
 		logger.error(e.message);
 		// We are not able to ask the `wrangler` CLI parser to show help for a subcommand programmatically.
 		// The workaround is to re-run the parsing with an additional `--help` flag, which will result in the correct help message being displayed.
@@ -615,7 +619,10 @@ export async function handleError(
 			logger.debug(loggableException.stack);
 		}
 
-		if (!(loggableException instanceof UserError)) {
+		if (
+			!(loggableException instanceof UserError) &&
+			!(loggableException instanceof CLIError && loggableException.isUserError)
+		) {
 			await logPossibleBugMessage();
 		}
 	}
@@ -625,6 +632,8 @@ export async function handleError(
 		mayReport &&
 		// ...and it's not a user error
 		!(loggableException instanceof UserError) &&
+		// ...and it's not a CLI error flagged as a user error
+		!(loggableException instanceof CLIError && loggableException.isUserError) &&
 		// ...and it's not an un-reportable API error
 		!(loggableException instanceof APIError && !loggableException.reportable)
 	) {
