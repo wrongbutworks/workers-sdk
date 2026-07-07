@@ -34,10 +34,10 @@ export interface CLIErrorOptions {
  * Formats an AI-oriented error message for terminal display.
  *
  * The first line becomes the esbuild-formatted `✘ [ERROR]` text, and the
- * rest of the markdown is wrapped in a Unicode box (via {@link drawBox})
+ * rest of the message is wrapped in a Unicode box (via {@link drawBox})
  * so it's visually distinct from surrounding terminal output.
  *
- * @param aiMessage - The raw structured-markdown AI message.
+ * @param aiMessage - The raw AI message.
  * @returns The formatted message string.
  */
 function formatAgenticMessage(aiMessage: string): string {
@@ -51,7 +51,7 @@ function formatAgenticMessage(aiMessage: string): string {
  * messaging for human operators and AI agents.
  *
  * Every concrete subclass must supply both a human-readable message and an
- * AI-optimized (structured markdown) message via the constructor. The base
+ * AI-optimized message via the constructor. The base
  * class automatically selects the appropriate variant based on the detected
  * execution environment (see {@link isAgenticEnvironment}).
  *
@@ -64,7 +64,7 @@ export abstract class CLIError extends Error {
 	/** The human-oriented error message. */
 	readonly humanMessage: string;
 
-	/** The AI-oriented error message (structured markdown). */
+	/** The AI-oriented error message. */
 	readonly aiMessage: string;
 
 	/**
@@ -88,8 +88,7 @@ export abstract class CLIError extends Error {
 
 	/**
 	 * @param humanMessage - The concise, human-readable error message.
-	 * @param aiMessage - The verbose, structured-markdown error message
-	 *   intended for AI agents.
+	 * @param aiMessage - The verbose, error message intended for AI agents.
 	 * @param options - Configuration for telemetry, exit code, and
 	 *   user-error classification.
 	 */

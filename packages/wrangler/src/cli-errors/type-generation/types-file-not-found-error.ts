@@ -13,19 +13,11 @@ export class TypesFileNotFoundError extends CLIError {
 		const humanMessage = `Types file not found at ${typesPath}.`;
 
 		const aiMessage = dedent`
-			## Error: Types File Not Found
+			Error: Types File Not Found
 
-			The generated types file was not found at \`${typesPath}\`.
+			The generated types file was not found at "${typesPath}". "wrangler types --check" expects a previously generated types file at the specified path so it can compare it against the current configuration, but the file does not exist.
 
-			### What happened
-			\`wrangler types --check\` expects a previously generated types file at the
-			specified path so it can compare it against the current configuration. The
-			file does not exist.
-
-			### How to fix
-			- Run \`wrangler types\` first to generate the types file
-			- If the types file is at a different location, specify it: \`wrangler types --check ${typesPath}\`
-			- Ensure the file was not deleted or moved
+			To resolve this, run "wrangler types" first to generate the types file. If the types file is at a different location, specify it with wrangler types --check ${typesPath}. Also ensure the file was not deleted or moved.
 		`;
 
 		super(humanMessage, aiMessage, {

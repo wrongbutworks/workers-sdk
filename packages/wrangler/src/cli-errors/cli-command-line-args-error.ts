@@ -17,8 +17,7 @@ import type { CLIErrorOptions } from "./cli-error";
 export abstract class CLICommandLineArgsError extends CLIError {
 	/**
 	 * @param humanMessage - The concise, human-readable error message.
-	 * @param aiMessage - The verbose, structured-markdown error message
-	 *   intended for AI agents.
+	 * @param aiMessage - The verbose, error message intended for AI agents.
 	 * @param options - Configuration for telemetry, exit code, and
 	 *   user-error classification.
 	 */

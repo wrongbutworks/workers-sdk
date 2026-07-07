@@ -21,24 +21,13 @@ export class DuplicateInterfaceNameError extends CLIError {
 			`Please rename one of these environments to avoid conflicts.`;
 
 		const aiMessage = dedent`
-			## Error: Duplicate Interface Name
+			Error: Duplicate Interface Name
 
-			The environments \`${existingEnvName}\` and \`${newEnvName}\` both convert to the TypeScript interface name \`${interfaceName}\`.
+			The environments "${existingEnvName}" and "${newEnvName}" both convert to the TypeScript interface name "${interfaceName}". Wrangler generates a TypeScript interface for each environment by converting the environment name to PascalCase and appending "Env". Both "${existingEnvName}" and "${newEnvName}" produce the same interface name "${interfaceName}", which would result in a TypeScript compilation error.
 
-			### What happened
-			Wrangler generates a TypeScript interface for each environment by converting
-			the environment name to PascalCase and appending \`Env\`. Both \`${existingEnvName}\`
-			and \`${newEnvName}\` produce the same interface name \`${interfaceName}\`, which
-			would result in a TypeScript compilation error.
+			To resolve this, rename one of the environments in wrangler.json so they produce distinct interface names (e.g. rename "${newEnvName}" to something more distinct).
 
-			### How to fix
-			- Rename one of the environments in \`wrangler.json\` so they produce distinct interface names
-			- For example, rename \`${newEnvName}\` to something more distinct
-
-			### Question to ask the human
-			To better resolve this issue, consider asking the human developer the following:
-			- Which environment should be renamed: \`${existingEnvName}\` or \`${newEnvName}\`?
-			- What should the new name be?
+			You may want to ask the human developer which environment should be renamed ("${existingEnvName}" or "${newEnvName}") and what the new name should be.
 		`;
 
 		super(humanMessage, aiMessage, {

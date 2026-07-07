@@ -12,27 +12,13 @@ export class IncompatibleServiceWorkerError extends CLIError {
 			"An env-interface value has been provided but the worker uses the incompatible Service Worker syntax";
 
 		const aiMessage = dedent`
-			## Error: Incompatible Service Worker Syntax
+			Error: Incompatible Service Worker Syntax
 
-			A custom \`--env-interface\` was specified, but the Worker uses Service Worker syntax.
+			A custom --env-interface was specified, but the Worker uses Service Worker syntax. The --env-interface option generates a named TypeScript interface for the Worker's environment bindings. This only works with the ES Modules (module) Worker format, where bindings are passed as the "env" parameter to the "fetch" handler. Service Worker syntax accesses bindings as global variables and does not use an environment interface.
 
-			### What happened
-			The \`--env-interface\` option generates a named TypeScript interface for the
-			Worker's environment bindings. This only works with the ES Modules (module)
-			Worker format, where bindings are passed as the \`env\` parameter to the
-			\`fetch\` handler. Service Worker syntax accesses bindings as global variables
-			and does not use an environment interface.
+			To resolve this, either remove the --env-interface flag, or migrate the Worker to ES Modules syntax by changing addEventListener('fetch', ...) to export default { fetch(request, env, ctx) { ... } }. See https://developers.cloudflare.com/workers/reference/migrate-to-module-workers/ for migration guidance.
 
-			### How to fix
-			- Remove the \`--env-interface\` flag and use the default behavior
-			- Or migrate the Worker to ES Modules syntax (recommended):
-			  - Change \`addEventListener('fetch', ...)\` to \`export default { fetch(request, env, ctx) { ... } }\`
-			  - See https://developers.cloudflare.com/workers/reference/migrate-to-module-workers/
-
-			### Question to ask the human
-			To better resolve this issue, consider asking the human developer the following:
-			- Should the Worker be migrated from Service Worker syntax to ES Modules?
-			- Or should the \`--env-interface\` flag be removed?
+			You may want to ask the human developer whether the Worker should be migrated to ES Modules or whether the --env-interface flag should be removed.
 		`;
 
 		super(humanMessage, aiMessage, {

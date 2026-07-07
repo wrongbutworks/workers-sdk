@@ -49,29 +49,18 @@ export class MissingBindingFieldError extends CLIError {
 
 		const envContext = isTopLevel
 			? "at the top level of the configuration"
-			: `in the \`env.${envName}\` environment`;
+			: `in the "env.${envName}" environment`;
 
 		const aiMessage = dedent`
-			## Error: Missing Binding Field
+			Error: Missing Binding Field
 
-			A \`${bindingType}\` binding ${envContext} is missing the required \`${fieldName}\` field.
+			A "${bindingType}" binding ${envContext} is missing the required "${fieldName}" field. While processing "${configFile}", Wrangler found a binding entry that is missing its "${fieldName}" property. The invalid binding object is:
 
-			### What happened
-			While processing \`${configFile}\`, Wrangler found a binding entry that is missing
-			its \`${fieldName}\` property. The invalid binding object is:
+			  ${JSON.stringify(binding, null, 2)}
 
-			\`\`\`json
-			${JSON.stringify(binding, null, 2)}
-			\`\`\`
+			To resolve this, add a "${fieldName}" field to the "${field}" binding in "${configFile}" (e.g. "${fieldName}": "MY_BINDING"). See https://developers.cloudflare.com/workers/runtime-apis/bindings/ for binding configuration reference.
 
-			### How to fix
-			- Add a \`${fieldName}\` field to the \`${field}\` binding in \`${configFile}\`
-			- Example: \`"${fieldName}": "MY_BINDING"\`
-			- See https://developers.cloudflare.com/workers/runtime-apis/bindings/ for binding configuration reference
-
-			### Question to ask the human
-			To better resolve this issue, consider asking the human developer the following:
-			- What should the \`${fieldName}\` value be for this ${bindingType} binding?
+			You may want to ask the human developer what the "${fieldName}" value should be for this ${bindingType} binding.
 		`;
 
 		super(humanMessage, aiMessage, {

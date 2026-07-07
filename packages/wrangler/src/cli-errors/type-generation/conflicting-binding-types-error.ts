@@ -25,26 +25,13 @@ export class ConflictingBindingTypesError extends CLIError {
 			`Please use unique binding names for different binding types.`;
 
 		const aiMessage = dedent`
-			## Error: Conflicting Binding Types
+			Error: Conflicting Binding Types
 
-			The binding \`${bindingName}\` is used as both \`${existingCategory}\` and \`${conflictingCategory}\`.
+			The binding "${bindingName}" is used as both "${existingCategory}" and "${conflictingCategory}". When generating types across multiple environments, Wrangler found that the binding name "${bindingName}" is used for a "${existingCategory}" binding in one environment and a "${conflictingCategory}" binding in the "${envName}" environment. This creates a type conflict because the same name would need to represent two incompatible types in the generated TypeScript interface.
 
-			### What happened
-			When generating types across multiple environments, Wrangler found that the
-			binding name \`${bindingName}\` is used for a \`${existingCategory}\` binding in one
-			environment and a \`${conflictingCategory}\` binding in the \`${envName}\` environment.
-			This creates a type conflict because the same name would need to represent
-			two incompatible types in the generated TypeScript interface.
+			To resolve this, rename one of the "${bindingName}" bindings to use a unique name (e.g. rename the "${conflictingCategory}" binding in "${envName}" to "${bindingName}_${conflictingCategory.toUpperCase()}"). Each binding name must map to the same category across all environments.
 
-			### How to fix
-			- Rename one of the \`${bindingName}\` bindings to use a unique name
-			- For example, rename the \`${conflictingCategory}\` binding in \`${envName}\` to \`${bindingName}_${conflictingCategory.toUpperCase()}\`
-			- Ensure each binding name maps to the same category across all environments
-
-			### Question to ask the human
-			To better resolve this issue, consider asking the human developer the following:
-			- Which binding should be renamed: the \`${existingCategory}\` or the \`${conflictingCategory}\`?
-			- What should the new binding name be?
+			You may want to ask the human developer which binding should be renamed (the "${existingCategory}" or the "${conflictingCategory}") and what the new binding name should be.
 		`;
 
 		super(humanMessage, aiMessage, {

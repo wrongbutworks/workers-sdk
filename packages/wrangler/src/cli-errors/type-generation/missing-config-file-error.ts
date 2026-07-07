@@ -15,20 +15,11 @@ export class MissingConfigFileError extends CLIError {
 		const humanMessage = `No config file detected${location}. This command requires a Wrangler configuration file.`;
 
 		const aiMessage = dedent`
-			## Error: Missing Configuration File
+			Error: Missing Configuration File
 
-			No Wrangler configuration file was found${location}.
+			No Wrangler configuration file was found${location}. The "wrangler types" command requires a wrangler.json (or wrangler.jsonc / wrangler.toml) configuration file to generate TypeScript types for your Worker's bindings and runtime environment. No such file was detected in the current directory or at the specified path.
 
-			### What happened
-			The \`wrangler types\` command requires a \`wrangler.json\` (or \`wrangler.jsonc\`
-			/ \`wrangler.toml\`) configuration file to generate TypeScript types for your
-			Worker's bindings and runtime environment. No such file was detected in the
-			current directory or at the specified path.
-
-			### How to fix
-			- Create a \`wrangler.json\` file in the project root with at least \`name\` and \`compatibility_date\` fields
-			- If the config file exists elsewhere, specify its path: \`wrangler types --config path/to/wrangler.json\`
-			- Run \`wrangler init\` to scaffold a new project with a config file
+			To resolve this, create a wrangler.json file in the project root with at least "name" and "compatibility_date" fields. If the config file exists elsewhere, specify its path with wrangler types --config path/to/wrangler.json. Alternatively, run "wrangler init" to scaffold a new project with a config file.
 		`;
 
 		super(humanMessage, aiMessage, {

@@ -21,30 +21,20 @@ function buildHumanMessage(
  *
  * @param envInterface - The invalid value.
  * @param validInterfaceRegex - The RegExp used to validate the interface name.
- * @returns The formatted markdown error message string.
+ * @returns The formatted error message string.
  */
 function buildAiMessage(
 	envInterface: string,
 	validInterfaceRegex: RegExp
 ): string {
 	return dedent`
-		## Error: Invalid Env Interface Name
+		Error: Invalid Env Interface Name
 
-		The env-interface value \`${envInterface}\` is not a valid TypeScript identifier.
+		The env-interface value "${envInterface}" is not a valid TypeScript identifier. The --env-interface option (or envInterface API option) specifies the name of the generated TypeScript interface for environment bindings. It must be a valid TypeScript identifier matching ${validInterfaceRegex}.
 
-		### What happened
-		The \`--env-interface\` option (or \`envInterface\` API option) specifies the name
-		of the generated TypeScript interface for environment bindings. It must be a
-		valid TypeScript identifier matching \`${validInterfaceRegex}\`.
+		To resolve this, use a valid identifier that starts with a letter, followed by letters, digits, or underscores (e.g. wrangler types --env-interface=MyEnv). If not specified, the default "Env" is used.
 
-		### How to fix
-		- Use a valid identifier: start with a letter, followed by letters, digits, or underscores
-		- Example: \`wrangler types --env-interface=MyEnv\`
-		- If not specified, the default \`Env\` is used
-
-		### Question to ask the human
-		To better resolve this issue, consider asking the human developer the following:
-		- What should the environment interface be named?
+		You may want to ask the human developer what the environment interface should be named.
 	`;
 }
 

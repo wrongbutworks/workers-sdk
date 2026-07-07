@@ -16,22 +16,13 @@ export class ReservedInterfaceNameError extends CLIError {
 			`Please rename this environment to avoid conflicts.`;
 
 		const aiMessage = dedent`
-			## Error: Reserved Interface Name Conflict
+			Error: Reserved Interface Name Conflict
 
-			The environment name \`${envName}\` converts to the reserved interface name \`${interfaceName}\`.
+			The environment name "${envName}" converts to the reserved interface name "${interfaceName}". When generating per-environment TypeScript types, Wrangler converts environment names to PascalCase interface names with an "Env" suffix. The name "${envName}" converts to "${interfaceName}", which is reserved for the default environment interface.
 
-			### What happened
-			When generating per-environment TypeScript types, Wrangler converts environment
-			names to PascalCase interface names with an \`Env\` suffix. The name \`${envName}\`
-			converts to \`${interfaceName}\`, which is reserved for the default environment interface.
+			To resolve this, rename the "${envName}" environment in wrangler.json to something that does not conflict (e.g. "production", "staging", "dev", or any other descriptive name).
 
-			### How to fix
-			- Rename the \`${envName}\` environment in \`wrangler.json\` to something that does not conflict
-			- For example, use \`production\`, \`staging\`, \`dev\`, or any other descriptive name
-
-			### Question to ask the human
-			To better resolve this issue, consider asking the human developer the following:
-			- What should the \`${envName}\` environment be renamed to?
+			You may want to ask the human developer what the "${envName}" environment should be renamed to.
 		`;
 
 		super(humanMessage, aiMessage, {

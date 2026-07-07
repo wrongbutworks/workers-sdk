@@ -18,29 +18,17 @@ function buildHumanMessage(envOpt: string, runtimeOpt: string): string {
  *
  * @param envOpt - The env option name (CLI flag or API option).
  * @param runtimeOpt - The runtime option name (CLI flag or API option).
- * @returns The formatted markdown error message string.
+ * @returns The formatted AI error message string.
  */
 function buildAiMessage(envOpt: string, runtimeOpt: string): string {
 	return dedent`
-		## Error: No Type Generation Selected
+		Error: No Type Generation Selected
 
-		Both \`${envOpt}\` and \`${runtimeOpt}\` are disabled. At least one must be enabled.
+		Both ${envOpt} and ${runtimeOpt} are disabled, but at least one must be enabled. "wrangler types" can generate two kinds of types: environment types (${envOpt}) for your Worker's bindings (KV, D1, R2, etc.) and runtime types (${runtimeOpt}) for the Workers runtime APIs. Both have been explicitly disabled, leaving nothing to generate.
 
-		### What happened
-		\`wrangler types\` can generate two kinds of types:
-		- **Environment types** (\`${envOpt}\`): TypeScript interfaces for your Worker's bindings (KV, D1, R2, etc.)
-		- **Runtime types** (\`${runtimeOpt}\`): TypeScript definitions for the Workers runtime APIs
+		To resolve this, enable env types with ${envOpt}, enable runtime types with ${runtimeOpt}, or enable both (the default) by omitting both flags entirely.
 
-		Both have been explicitly disabled, leaving nothing to generate.
-
-		### How to fix
-		- Enable env types: \`${envOpt}\`
-		- Enable runtime types: \`${runtimeOpt}\`
-		- Or enable both (the default): omit both flags entirely
-
-		### Question to ask the human
-		To better resolve this issue, consider asking the human developer the following:
-		- Which types are needed: environment types, runtime types, or both?
+		You may want to ask the human developer which types are needed: environment types, runtime types, or both.
 	`;
 }
 

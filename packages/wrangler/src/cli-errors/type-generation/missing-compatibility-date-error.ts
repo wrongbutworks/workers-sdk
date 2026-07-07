@@ -10,16 +10,11 @@ export class MissingCompatibilityDateError extends CLIError {
 		const humanMessage = "Config must have a compatibility date.";
 
 		const aiMessage = dedent`
-			## Error: Missing Compatibility Date
+			Error: Missing Compatibility Date
 
-			The Wrangler configuration does not include a \`compatibility_date\` field.
+			The Wrangler configuration does not include a "compatibility_date" field. The "wrangler types" command needs a "compatibility_date" to determine which Workers runtime APIs are available. Without it, runtime types cannot be generated.
 
-			### What happened
-			The \`wrangler types\` command needs a \`compatibility_date\` to determine which
-			Workers runtime APIs are available. Without it, runtime types cannot be generated.
-
-			### How to fix
-			- Add a \`compatibility_date\` field to \`wrangler.json\`, e.g.: \`"compatibility_date": "2025-01-01"\` set to the current date
+			To resolve this, add a "compatibility_date" field to wrangler.json set to the current date, e.g. "compatibility_date": "2025-01-01".
 		`;
 
 		super(humanMessage, aiMessage, {

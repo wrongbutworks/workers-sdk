@@ -15,26 +15,13 @@ export class DeprecatedIncludeRuntimeError extends CLICommandLineArgsError {
 			"Then rerun `wrangler types`.";
 
 		const aiMessage = dedent`
-			## Error: Deprecated Flag \`--experimental-include-runtime\`
+			Error: Deprecated Flag --experimental-include-runtime
 
-			The \`--experimental-include-runtime\` flag is no longer needed.
+			The --experimental-include-runtime (or --x-include-runtime) flag is no longer needed. "wrangler types" now generates both Env types and runtime types in a single output file by default.
 
-			### What happened
-			The \`--experimental-include-runtime\` (or \`--x-include-runtime\`) flag was used
-			to opt into runtime type generation as a separate file. This is now the default
-			behavior: \`wrangler types\` generates both Env types and runtime types in a
-			single output file.
+			To resolve this, remove the --experimental-include-runtime flag from the command, delete the old separate runtime types file (if it exists), remove any reference to it from tsconfig.json, and re-run "wrangler types" without the deprecated flag.
 
-			### How to fix
-			1. Remove the \`--experimental-include-runtime\` flag from the command
-			2. Delete the old separate runtime types file (if it exists)
-			3. Remove the old runtime types file from \`tsconfig.json\` (if referenced)
-			4. Run \`wrangler types\` without the deprecated flag
-
-			### Question to ask the human
-			To better resolve this issue, consider asking the human developer the following:
-			- Is there an old runtime types file that should be deleted?
-			- Does \`tsconfig.json\` reference the old runtime types file?
+			You may want to ask the human developer whether there is an old runtime types file that should be deleted, and whether tsconfig.json references it.
 		`;
 
 		super(humanMessage, aiMessage, {

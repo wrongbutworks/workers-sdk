@@ -16,28 +16,18 @@ function buildHumanMessage(outputPath: string): string {
  * Builds the AI-oriented message for an invalid output path.
  *
  * @param outputPath - The invalid path.
- * @returns The formatted markdown error message string.
+ * @returns The formatted error message string.
  */
 function buildAiMessage(outputPath: string): string {
 	const possibleReplacementPath = `${outputPath.replace(/\.[^.]*$/, "")}.d.ts`;
 	return dedent`
-		## Error: Invalid Output Path
+		Error: Invalid Output Path
 
-		The output path \`${outputPath}\` does not have a \`.d.ts\` extension.
+		The output path "${outputPath}" does not have a .d.ts extension. The "wrangler types" command generates a TypeScript declaration file, and the output path must end with .d.ts so TypeScript can recognize it as an ambient declaration file.
 
-		### What happened
-		The \`wrangler types\` command generates a TypeScript declaration file. The
-		output path must end with \`.d.ts\` so TypeScript can recognize it as an
-		ambient declaration file.
+		To resolve this, change the file extension to .d.ts (e.g. wrangler types ${possibleReplacementPath}). If no path is specified, the default worker-configuration.d.ts is used.
 
-		### How to fix
-		- Change the file extension to \`.d.ts\`
-		- Example: \`wrangler types ${possibleReplacementPath}\`
-		- If no path is specified, the default \`worker-configuration.d.ts\` is used
-
-		### Question to ask the human
-		To better resolve this issue, consider asking the human developer the following:
-		- What should the output file be named? is "${possibleReplacementPath}" ok?
+		You may want to ask the human developer what the output file should be named, and whether "${possibleReplacementPath}" is acceptable.
 	`;
 }
 

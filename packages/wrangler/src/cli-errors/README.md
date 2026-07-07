@@ -1,10 +1,10 @@
 # CLI Errors
 
 Structured error classes for Wrangler CLI commands. Each error provides **two
-messages**: a concise one for humans and a verbose, structured-markdown one for
-AI coding agents. The base class automatically selects the right variant at
-construction time by checking whether the process is running inside an agentic
-environment (via [`am-i-vibing`](https://www.npmjs.com/package/am-i-vibing)).
+messages**: a concise one for humans and a verbose and one for AI coding agents.
+The base class automatically selects the right variant at construction time by
+checking whether the process is running inside an agentic environment
+(via [`am-i-vibing`](https://www.npmjs.com/package/am-i-vibing)).
 
 ## Why
 
@@ -54,17 +54,13 @@ export class FluxCapacitorError extends CLIError {
 		const humanMessage = `Flux capacitor is miscalibrated (level: ${currentLevel}).`;
 
 		const aiMessage = dedent`
-			## Error: Flux Capacitor Miscalibrated
+			Error: Flux Capacitor Miscalibrated
 
 			The flux capacitor is at level ${currentLevel}, but it must be at 1.21 GW.
 
-			### How to fix
-			- Adjust the flux capacitor in \`wrangler.json\`
-			- Run \`wrangler calibrate --force\`
+			To resolve this, adjust the flux capacitor in wrangler.json and run "wrangler calibrate --force".
 
-			### Question to ask the human
-			To better resolve this issue, consider asking the human developer the following:
-			- Is this the correct DeLorean?
+			You may want to ask the human developer whether this is the correct DeLorean.
 		`;
 
 		super(humanMessage, aiMessage, {
@@ -76,27 +72,29 @@ export class FluxCapacitorError extends CLIError {
 
 ## AI Message Format
 
-AI messages should be structured markdown, for example following this:
+AI messages should be plain text written as natural prose. Avoid markdown
+formatting (no `##` headers, no backtick fences, no `**bold**`). Use double
+quotes around code identifiers, file names, and commands.
 
-```markdown
-## Error: [Short Title]
+A typical message has three parts that flow naturally:
 
-[One-sentence description of what happened]
+1. **Title and explanation** — Start with `Error: [Short Title]`, followed by
+   a paragraph that explains what happened and why.
+2. **Resolution** — A paragraph starting with "To resolve this, ..." that
+   tells the agent what to do.
+3. **Human questions** _(optional)_ — A sentence starting with "You may want
+   to ask the human developer ..." for cases where clarification is needed.
 
-### What happened
+Example:
 
-[Detailed explanation with relevant context]
+```
+Error: [Short Title]
 
-### How to fix
+[Description of what happened, including relevant context and why it matters.]
 
-- [Actionable option 1]
-- [Actionable option 2]
+To resolve this, [actionable fix instructions with concrete examples].
 
-### Question to ask the human
-
-To better resolve this issue, consider asking the human developer the following:
-
-- [Clarifying question the AI should ask its human operator]
+You may want to ask the human developer [clarifying question].
 ```
 
 ## Base Classes
@@ -115,7 +113,7 @@ You can override automatic agent detection with the
 
 | Value     | Effect                                                    |
 | --------- | --------------------------------------------------------- |
-| `"true"`  | Force AI-optimized (structured markdown) error output     |
+| `"true"`  | Force AI-optimized (plain text) error output              |
 | `"false"` | Force concise human error output, even inside an AI agent |
 | _(unset)_ | Auto-detect via `am-i-vibing` (default)                   |
 
